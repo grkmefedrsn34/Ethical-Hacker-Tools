@@ -1,32 +1,29 @@
 import scapy.all as scapy
-import optparse as opt
+import optparse
 
-# 1-) ARP Table Request
-# 2-) Broadcast
-# 3-) ARP Table Response
+#1)arp_request
+#2)broadcast
+#3)response
 
-def user_get_input():
-    object = opt.OptionParser()
-    object.add_option("-t", "--target", dest="target" ,help="Target IP / IP range")
+def get_user_input():
+    parse_object = optparse.OptionParser()
+    parse_object.add_option("-i","--ipaddress", dest="ip_address",help="Enter IP Address")
 
-    (user_input, arguments) = object.parse_args()
+    (user_input,arguments) = parse_object.parse_args()
 
-    if not user_input.target:
-        object.error("[-] Please specify an IP / IP range, use --help for more info.")
+    if not user_input.ip_address:
+        print("Enter IP Address")
 
-    return user_input.target
+    return user_input
 
-def scan_network(ip):
+def scan_my_network(ip):
     arp_request_packet = scapy.ARP(pdst=ip)
-
+    #scapy.ls(scapy.ARP())
     broadcast_packet = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
+    #scapy.ls(scapy.Ether())
+    combined_packet = broadcast_packet/arp_request_packet
+    (answered_list,unanswered_list) = scapy.srp(combined_packet,timeout=1)
+    answered_list.summary()
 
-    combined_packet = broadcast_packet / arp_request_packet
-
-    (answer_list , unanswer_list) = scapy.srp(combined_packet, timeout=1)
-    answer_list.summary()
-
-
-
-user_ip = user_get_input()
-scan_network(user_ip.target)
+user_ip_address = get_user_input()
+scan_my_network(user_ip_address.ip_address)
